@@ -1,0 +1,119 @@
+/* Variables CSS: paleta y fuentes en un único sitio; cambiar una aquí cambia toda la web */
+:root {
+  --terciopelo: #2b1220;
+  --butaca: #3d1a2e;
+  --entrada: #f3e6cf;
+  --tinta: #2a1a12;
+  --laton: #d9a441;
+  --ok: #4f9d69;
+  --error: #d9534f;
+  --texto: #f7ecd9;
+  --radio: 10px;
+  --fuente-titulo: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+  --fuente-texto: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--terciopelo);
+  color: var(--texto);
+  font-family: var(--fuente-texto);
+  line-height: 1.55;
+}
+
+h1, h2, h3 { font-family: var(--fuente-titulo); font-weight: 700; margin: 0 0 .5rem; }
+h1 { font-size: clamp(2rem, 6vw, 3.25rem); letter-spacing: .04em; color: var(--laton); }
+h2 { font-size: 1.5rem; }
+
+/* ---------- Cabecera y estado de red ---------- */
+.cabecera {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 1rem; padding: 1.5rem clamp(1rem, 5vw, 3rem);
+  border-bottom: 2px solid var(--laton);
+}
+.estado-red {
+  margin: 0; padding: .35rem .9rem; border-radius: 999px;
+  font-size: .9rem; border: 1px solid currentColor;
+}
+/* Estados de red: app.js solo alterna estas clases, el aspecto se decide aquí */
+.estado-red--online { color: var(--ok); }
+.estado-red--offline { color: var(--error); }
+
+/* ---------- Layout ---------- */
+main { display: grid; gap: 1.5rem; max-width: 60rem; margin: 0 auto; padding: 2rem 1rem; }
+.panel { background: var(--butaca); border-radius: var(--radio); padding: 1.5rem; }
+
+/* ---------- Perfil / resumen (listas de definición) ---------- */
+/* <dl> como rejilla de 2 columnas: etiqueta | valor */
+.perfil, .resumen {
+  display: grid; grid-template-columns: max-content 1fr; gap: .4rem 1.25rem; margin: 0;
+}
+.perfil dt, .resumen dt { color: var(--laton); }
+.perfil dd, .resumen dd { margin: 0; overflow-wrap: anywhere; }
+.resumen dd { text-align: right; font-variant-numeric: tabular-nums; }
+.resumen .total { font-size: 1.25rem; font-weight: 700; border-top: 1px dashed var(--laton); padding-top: .5rem; margin-top: .25rem; }
+
+/* ---------- Banner de oferta ---------- */
+.banner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
+  background: var(--laton); color: var(--tinta); border-radius: var(--radio); padding: 1.25rem 1.5rem;
+}
+.banner p { margin: 0; }
+.cuenta-atras {
+  font-family: var(--fuente-titulo); font-size: 3rem; font-weight: 700; min-width: 3ch; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Tarjetas de precios: entrada con muescas ---------- */
+.tarifas {
+  list-style: none; padding: 0; margin: 0 0 1.25rem;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem;
+}
+/* Tarjeta con forma de entrada: las muescas laterales se recortan con mask + radial-gradient (sin imágenes) */
+.tarjeta-precio {
+  position: relative; background: var(--entrada); color: var(--tinta);
+  padding: 1.25rem 1.5rem; border-radius: 6px;
+  -webkit-mask: radial-gradient(circle 10px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+                radial-gradient(circle 10px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+          mask: radial-gradient(circle 10px at 0 50%, transparent 98%, #000) left / 51% 100% no-repeat,
+                radial-gradient(circle 10px at 100% 50%, transparent 98%, #000) right / 51% 100% no-repeat;
+}
+.precio { margin: 0; font-family: var(--fuente-titulo); font-size: 2.25rem; font-weight: 700; }
+
+/* ---------- Formularios y botones ---------- */
+label { display: block; margin-bottom: .35rem; }
+input, textarea {
+  width: 100%; max-width: 28rem; padding: .6rem .8rem; border-radius: 6px;
+  border: 1px solid var(--laton); background: var(--terciopelo); color: var(--texto); font: inherit;
+}
+textarea { max-width: none; resize: vertical; }
+
+button {
+  margin-top: .75rem; padding: .65rem 1.25rem; border: 0; border-radius: 6px; cursor: pointer;
+  background: var(--terciopelo); color: var(--laton); font: inherit; font-weight: 600;
+  border: 2px solid var(--laton);
+}
+.banner button { background: var(--tinta); color: var(--entrada); border-color: var(--tinta); margin: 0; }
+button:hover:not(:disabled) { background: var(--laton); color: var(--tinta); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+/* Foco visible para navegación con teclado (accesibilidad) */
+:focus-visible { outline: 3px solid var(--entrada); outline-offset: 2px; }
+
+.aviso { color: var(--error); font-weight: 600; }
+.reserva { color: var(--ok); font-weight: 600; min-height: 1.5rem; }
+
+/* ---------- Reseñas ---------- */
+.resenas { list-style: none; padding: 0; margin: 1.25rem 0 0; display: grid; gap: .75rem; }
+.resenas li { background: var(--terciopelo); border-left: 4px solid var(--laton); padding: .75rem 1rem; border-radius: 0 6px 6px 0; }
+.resenas p { margin: 0; overflow-wrap: anywhere; }
+.resena-meta { color: var(--laton); font-size: .85rem; }
+
+.pie { text-align: center; padding: 2rem 1rem; opacity: .7; }
+
+@media (max-width: 30rem) {
+  .perfil, .resumen { grid-template-columns: 1fr; }
+  .resumen dd { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
