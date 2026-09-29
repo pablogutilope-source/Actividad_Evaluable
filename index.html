@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CineVerse · Reserva de entradas</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- async: se descarga en paralelo y se ejecuta EN CUANTO llega (orden no garantizado).
+       Válido aquí porque las métricas no dependen del DOM ni de otros scripts. -->
+  <script src="metricas.js" async></script>
+  <!-- defer: se descarga en paralelo SIN bloquear el dibujado y se ejecuta cuando el DOM
+       ya está construido. Por eso app.js puede usar getElementById aunque esté en el <head>. -->
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="cabecera">
+    <h1>CineVerse</h1>
+    <!-- role="status": los lectores de pantalla anuncian los cambios (aquí los pone app.js) -->
+    <p id="estado-red" class="estado-red" role="status">Comprobando conexión…</p>
+  </header>
+
+  <main>
+    <section class="panel" aria-labelledby="t-perfil">
+      <h2 id="t-perfil">Tu perfil de socio</h2>
+      <dl id="perfil" class="perfil"></dl>
+    </section>
+
+    <aside class="banner" aria-labelledby="t-oferta">
+      <div>
+        <h2 id="t-oferta">Venta anticipada</h2>
+        <p>Descuento flash de 20 segundos para los próximos estrenos.</p>
+      </div>
+      <p id="cuenta-atras" class="cuenta-atras" aria-live="polite">20</p>
+      <button id="btn-flash" type="button">Activar Descuento Flash</button>
+    </aside>
+
+    <section class="panel" aria-labelledby="t-taquilla">
+      <h2 id="t-taquilla">Taquilla</h2>
+      <ul class="tarifas">
+        <!-- Los precios se guardan como TEXTO en data-precio: el JS los recibe como string y los convierte -->
+        <li class="tarjeta-precio">
+          <h3>Entrada General</h3>
+          <p class="precio" data-nombre="Entrada General" data-precio="8.50€">8.50€</p>
+        </li>
+        <li class="tarjeta-precio">
+          <h3>Combo Pareja</h3>
+          <p class="precio" data-nombre="Combo Pareja" data-precio="12.00€">12.00€</p>
+        </li>
+      </ul>
+      <label class="campo-promo" for="codigo-promo">Código promocional (€ de descuento)
+        <input id="codigo-promo" type="text" inputmode="decimal" value="3">
+      </label>
+    </section>
+
+    <section class="panel" aria-labelledby="t-resumen">
+      <h2 id="t-resumen">Resumen de compra</h2>
+      <dl id="resumen" class="resumen"></dl>
+      <p id="aviso-resumen" class="aviso" role="alert" hidden></p>
+      <button id="btn-reservar" type="button">Confirmar reserva</button>
+      <p id="reserva" class="reserva" aria-live="polite"></p>
+    </section>
+
+    <section class="panel" aria-labelledby="t-criticas">
+      <h2 id="t-criticas">Críticas de películas</h2>
+      <form id="form-resena" class="form-resena">
+        <label for="opinion">Tu opinión</label>
+        <textarea id="opinion" rows="3" maxlength="500" required></textarea>
+        <button type="submit">Publicar crítica</button>
+      </form>
+      <ul id="lista-resenas" class="resenas"></ul>
+    </section>
+  </main>
+
+  <footer class="pie"><small>CineVerse · Portal de reserva de entradas</small></footer>
+</body>
+</html>
