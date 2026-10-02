@@ -1,82 +1,77 @@
 'use strict';
-/* "use strict" (requisito del enunciado): activa el modo estricto. Convierte errores
-   silenciosos en excepciones (variables sin declarar, asignar a constantes, etc.).
-   Debe ser la PRIMERA sentencia del fichero para que surta efecto. */
+// Activa el modo estricto: los errores silenciosos pasan a lanzar excepciones.
 
-/* ==========================================================================
-   Utilidades
-   ========================================================================== */
-const $ = (id) => document.getElementById(id); // atajo para no repetir document.getElementById
+// ============================================================
+// Utilidades
+// ============================================================
+// Atajo para buscar un elemento del HTML por su id.
+const $ = (id) => document.getElementById(id);
 
-/* Datos simulados del socio. Están pensados para activar TODOS los valores por defecto
-   del Bloque 1.4: apodo vacío, suscripción null y saldo undefined. */
+// Datos de ejemplo del socio, preparados para probar los valores por defecto.
 const socio = {
-  email: '  Juan.Perez@CineVerse.ES  ', // espacios y mayúsculas a propósito, para probar la limpieza
-  codigo: 4821,                          // número: se rellenará con ceros hasta 6 dígitos
-  apodo: '',
-  suscripcion: null,
-  entradasRegalo: undefined,
+  email: '  Juan.Perez@CineVerse.ES  ', // con espacios y mayúsculas para probar la limpieza
+  codigo: 4821,                          // se rellenará con ceros hasta 6 dígitos
+  apodo: '',                             // vacío -> tomará el apodo por defecto
+  suscripcion: null,                     // null -> tomará la suscripción por defecto
+  entradasRegalo: undefined,             // undefined -> tomará las entradas por defecto
 };
 
-/* ==========================================================================
-   BLOQUE 1 · Acceso, diagnóstico del entorno y perfil
-   ========================================================================== */
+// ============================================================
+// BLOQUE 1 · Acceso, diagnóstico del entorno y perfil
+// ============================================================
 
-/* 1.2 Identificación de la sesión */
+// Recoge los datos de la sesión actual (URL y navegador).
 function leerSesion() {
-  // URLSearchParams lee los parámetros de la URL: index.html?usuario=Ana&rol=vip
+  // Lee los parámetros de la URL (ej: ?usuario=Ana&rol=vip).
   const params = new URLSearchParams(window.location.search);
   return {
-    // "||" -> si el parámetro no existe (get devuelve null) se usa el valor por defecto
+    // Si el parámetro no existe, usa el valor por defecto.
     usuario: params.get('usuario') || 'invitado',
     rol: params.get('rol') || 'socio',
-    idioma: navigator.language,     // p. ej. "es-ES"
-    online: navigator.onLine,       // true/false en el momento de la carga
-    // randomUUID usa el generador criptográficamente seguro del navegador
-    // (Math.random NO es seguro para identificadores de sesión)
+    idioma: navigator.language,     // idioma del navegador
+    online: navigator.onLine,       // true si hay conexión al cargar
+    // Genera un identificador único y seguro para la sesión.
     sesionId: crypto.randomUUID(),
-    // Fecha en texto extendido en español: "lunes, 28 de septiembre de 2026"
+    // Fecha actual en texto largo en español.
     fecha: new Date().toLocaleDateString('es-ES', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     }),
   };
 }
 
-/* 1.3 Limpieza del correo */
+// Normaliza el correo y lo separa en nombre y dominio.
 function limpiarCorreo(correoBruto) {
-  // trim() quita espacios de los extremos; toLowerCase() normaliza a minúsculas
+  // Quita los espacios de los extremos y pasa a minúsculas.
   const correo = correoBruto.trim().toLowerCase();
-  // Desestructuración: split('@') devuelve ["juan.perez", "cineverse.es"]
+  // Separa el correo por la arroba en nombre y dominio.
   const [nombre, dominio] = correo.split('@');
   return { correo, nombre, dominio };
 }
 
-/* padStart solo existe en strings: por eso String(codigo) antes de rellenar.
-   4821 -> "004821" */
+// Convierte el código en texto y lo rellena con ceros hasta 6 dígitos (4821 -> "004821").
 const formatearCodigo = (codigo) => String(codigo).padStart(6, '0');
 
-/* 1.4 Asignación de preferencias.
-   OJO a la diferencia entre operadores (es lo que evalúa la rúbrica):
-   - ||=  sustituye cualquier valor "falsy" ('' , 0, null, undefined, false)
-   - ??=  sustituye SOLO null o undefined (respeta 0 y '')            */
+// Rellena con valores por defecto los datos que faltan.
 function aplicarPreferencias(datos) {
-  datos.apodo ||= 'Espectador VIP';   // '' es falsy -> se sustituye
-  datos.suscripcion ??= 'Básica';     // null/undefined -> "Básica"
-  // Con ||= un saldo de 0 pasaría a 2 (error). Con ??= el 0 se respeta,
-  // tal como pide el enunciado.
+  datos.apodo ||= 'Espectador VIP';   // sustituye cualquier valor "falsy" (como '')
+  datos.suscripcion ??= 'Básica';     // sustituye solo null o undefined
+  // Sustituye solo null o undefined, así un 0 se respeta.
   datos.entradasRegalo ??= 2;
   return datos;
 }
 
+// Muestra si el usuario tiene conexión o no.
 function actualizarEstadoRed(online) {
   const el = $('estado-red');
   el.textContent = online ? 'Conectado' : 'Sin conexión';
-  // toggle(clase, condición): añade o quita la clase. El color lo decide el CSS.
+  // Añade o quita la clase según haya conexión; el color lo decide el CSS.
   el.classList.toggle('estado-red--online', online);
   el.classList.toggle('estado-red--offline', !online);
 }
 
+// Muestra en pantalla los datos del perfil del socio.
 function renderPerfil(sesion, correo) {
+  // Cada fila es [etiqueta, valor].
   const filas = [
     ['Usuario', sesion.usuario],
     ['Rol', sesion.rol],
@@ -91,78 +86,82 @@ function renderPerfil(sesion, correo) {
     ['Fecha', sesion.fecha],
   ];
   const perfil = $('perfil');
+  // Crea un título (dt) y un valor (dd) por cada fila y los añade a la lista.
   for (const [etiqueta, valor] of filas) {
     const dt = document.createElement('dt');
     const dd = document.createElement('dd');
     dt.textContent = etiqueta;
-    // textContent (no innerHTML): el usuario viene de la URL, es entrada NO confiable.
-    // Con innerHTML, ?usuario=<img onerror=...> sería una inyección XSS.
+    // textContent inserta texto plano, así el HTML de la URL no se ejecuta (anti-XSS).
     dd.textContent = valor;
     perfil.append(dt, dd);
   }
 }
 
-/* ==========================================================================
-   BLOQUE 2 · Taquilla, tarifas y facturación
-   ========================================================================== */
-const IVA = 0.21;
-// Intl.NumberFormat da el formato regional: 12,10 €  (coma decimal y símbolo detrás)
+// ============================================================
+// BLOQUE 2 · Taquilla, tarifas y facturación
+// ============================================================
+const IVA = 0.21; // 21 % de IVA
+// Formateador de moneda en euros con estilo español (12,10 €).
 const formatoEuro = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
-let idTicket = 1000; // último ticket emitido
+let idTicket = 1000; // último número de ticket emitido
 
-/* 2.1 Los precios llegan como TEXTO ("8.50€") y hay que convertirlos a número */
+// Lee los precios del HTML (atributo data-precio) y los convierte de texto a número.
 function leerPrecios() {
   return [...document.querySelectorAll('[data-precio]')]
-    // parseFloat lee hasta donde puede: "8.50€" -> 8.5 (Number("8.50€") daría NaN)
+    // parseFloat convierte "8.50€" en 8.5.
     .map((el) => parseFloat(el.dataset.precio));
 }
 
-/* 2.2 Cálculo con validación. Devuelve null si algún dato no es computable. */
+// Calcula subtotal, descuento, IVA y total. Devuelve null si algún dato no es válido.
 function calcularFactura(precios, codigoPromo) {
+  // Suma todos los precios.
   const subtotal = precios.reduce((acc, p) => acc + p, 0);
-  // Number.isFinite es false para NaN e Infinity: un solo precio inválido contamina toda la suma
+  // Si algún precio no era un número, el subtotal no es válido.
   if (!Number.isFinite(subtotal)) return null;
 
-  // El código promocional también llega como texto ("3"). Number("") = 0, Number("abc") = NaN
+  // El código promocional es el importe a descontar.
   const descuento = Number(codigoPromo);
+  // Descuento no numérico o negativo: no se puede calcular.
   if (!Number.isFinite(descuento) || descuento < 0) return null;
 
-  // Orden pedido: primero se resta el descuento y DESPUÉS se aplica el IVA sobre ese resultado.
-  // Math.max evita bases negativas si el descuento supera al subtotal.
+  // Primero se resta el descuento y después se aplica el IVA; la base nunca es negativa.
   const base = Math.max(0, subtotal - descuento);
   const iva = base * IVA;
   return {
     subtotal,
-    descuento: Math.min(descuento, subtotal), // lo que realmente se descuenta
+    descuento: Math.min(descuento, subtotal), // descuento realmente aplicado
     iva,
     total: base + iva,
   };
 }
 
-/* 2.4 Desglose con formato de moneda */
+// Calcula la factura y muestra el desglose (o un aviso si hay error).
 function renderResumen() {
   const resumen = $('resumen');
   const aviso = $('aviso-resumen');
   const factura = calcularFactura(leerPrecios(), $('codigo-promo').value);
-  resumen.replaceChildren(); // vacía el contenido anterior antes de repintar
+  resumen.replaceChildren(); // vacía el desglose anterior
 
-  aviso.hidden = factura !== null; // muestra el aviso solo si hubo error
+  aviso.hidden = factura !== null; // el aviso solo se ve si hubo error
   if (!factura) {
     aviso.textContent = 'No se puede calcular: revisa los precios o introduce un descuento numérico válido.';
     return;
   }
 
+  // Cada fila es [etiqueta, importe].
   const filas = [
     ['Subtotal', factura.subtotal],
     ['Descuento', -factura.descuento], // en negativo para que se lea como resta
     ['IVA (21 %)', factura.iva],
     ['Total a pagar', factura.total],
   ];
+  // Crea título y valor por cada fila, con el importe en formato euro.
   for (const [etiqueta, importe] of filas) {
     const dt = document.createElement('dt');
     const dd = document.createElement('dd');
     dt.textContent = etiqueta;
     dd.textContent = formatoEuro.format(importe);
+    // La fila del total lleva una clase extra para destacarla.
     if (etiqueta === 'Total a pagar') {
       dt.classList.add('total');
       dd.classList.add('total');
@@ -171,141 +170,140 @@ function renderResumen() {
   }
 }
 
-/* 2.3 Número de reserva */
+// Genera un nuevo número de ticket y confirma la reserva.
 function confirmarReserva() {
-  // PRE-incremento (++x): suma 1 y devuelve el valor YA incrementado -> 1001.
-  // Con post-incremento (x++) devolvería el valor antiguo (1000), que ya estaba emitido.
+  // ++idTicket suma 1 antes de usar el valor, así no se repite el último ticket emitido.
   $('reserva').textContent = `Reserva confirmada · Ticket nº ${++idTicket}`;
 }
 
-/* ==========================================================================
-   BLOQUE 3 · Promoción "Venta Anticipada" (temporizador)
-   ========================================================================== */
-const DURACION_FLASH = 20;
-/* Variable de control: guarda el id del setInterval activo.
-   null = no hay cuenta atrás en marcha. Es la clave de todo el bloque. */
+// ============================================================
+// BLOQUE 3 · Promoción "Venta Anticipada" (temporizador)
+// ============================================================
+const DURACION_FLASH = 20; // segundos que dura la promoción
+// Guarda el id del intervalo activo (null = no hay cuenta atrás en marcha).
 let temporizadorId = null;
 
+// Inicia la cuenta atrás de la promoción.
 function activarDescuentoFlash() {
-  // 3.2 Control de concurrencia: si ya hay un intervalo en marcha, se ignora el clic.
-  // Sin este guard, cada clic crearía OTRO intervalo y la cuenta bajaría 2, 3... veces por segundo.
+  // Si ya hay una cuenta atrás en marcha, se ignora el clic.
   if (temporizadorId !== null) return;
 
   let restante = DURACION_FLASH;
   const pantalla = $('cuenta-atras');
   const boton = $('btn-flash');
-  pantalla.textContent = restante;
-  boton.disabled = true; // refuerzo visual; la protección real es el guard de arriba
+  pantalla.textContent = restante; // muestra el valor inicial
+  boton.disabled = true;           // bloquea el botón mientras corre la cuenta
 
+  // Cada segundo resta 1 y actualiza la pantalla.
   temporizadorId = setInterval(() => {
     restante -= 1;
     pantalla.textContent = restante;
 
-    // 3.3 Expiración: parar el intervalo Y limpiar la variable de control
+    // Al llegar a 0: para el intervalo, libera la variable de control y reactiva el botón.
     if (restante <= 0) {
-      clearInterval(temporizadorId); // si no se para, seguiría corriendo en segundo plano
-      temporizadorId = null;         // sin esto el botón quedaría bloqueado para siempre
+      clearInterval(temporizadorId);
+      temporizadorId = null;
       boton.disabled = false;
-      // alert() bloquea el hilo: el setTimeout deja que el navegador pinte primero el "0"
+      // El setTimeout deja que el navegador pinte el "0" antes de mostrar el alert.
       setTimeout(() => alert('La promoción de venta anticipada ha caducado.'), 50);
     }
   }, 1000);
 }
 
-/* ==========================================================================
-   BLOQUE 4 · Reseñas, seguridad y persistencia
-   ========================================================================== */
-const CLAVE_RESENAS = 'cineverse:resenas'; // clave en localStorage (prefijo para evitar colisiones)
+// ============================================================
+// BLOQUE 4 · Reseñas, seguridad y persistencia
+// ============================================================
+const CLAVE_RESENAS = 'cineverse:resenas'; // clave con la que se guardan en localStorage
 
-/* 4.3 Lectura con gestión de excepciones */
+// Recupera las reseñas guardadas; si algo falla devuelve una lista vacía.
 function cargarResenas() {
   try {
-    // localStorage solo guarda strings: se serializa con JSON.
-    // getItem devuelve null si la clave no existe -> "??" lo convierte en '[]'
+    // Lee el texto guardado (o '[]' si no hay nada) y lo convierte en datos.
     const guardadas = JSON.parse(localStorage.getItem(CLAVE_RESENAS) ?? '[]');
-    // Defensa extra: el JSON puede ser válido pero no ser un array
+    // Comprueba que el resultado sea realmente una lista.
     return Array.isArray(guardadas) ? guardadas : [];
   } catch (error) {
-    // JSON.parse lanza excepción si el contenido está corrupto (o localStorage está bloqueado).
-    // Sin el try/catch, la página entera dejaría de funcionar.
+    // Se llega aquí si el JSON está corrupto o localStorage está bloqueado.
     console.error('No se pudieron recuperar las reseñas:', error);
     return [];
   }
 }
 
+// Guarda las reseñas en localStorage como texto JSON.
 function guardarResenas(resenas) {
   try {
     localStorage.setItem(CLAVE_RESENAS, JSON.stringify(resenas));
   } catch (error) {
-    // Puede fallar por cuota llena o modo privado
+    // Puede fallar por cuota llena o modo privado.
     console.error('No se pudieron guardar las reseñas:', error);
   }
 }
 
-/* 4.4 Renderizado SEGURO (protección XSS) */
+// Dibuja la lista de reseñas en pantalla.
 function renderResenas(resenas) {
   const lista = $('lista-resenas');
-  lista.replaceChildren();
+  lista.replaceChildren(); // vacía la lista antes de repintar
 
+  // Crea un elemento de lista por cada reseña.
   for (const { socio: autor, hora, opinion } of resenas) {
     const li = document.createElement('li');
-    const cabecera = document.createElement('p');
-    const texto = document.createElement('p');
+    const cabecera = document.createElement('p'); // autor y hora
+    const texto = document.createElement('p');    // opinión
     cabecera.className = 'resena-meta';
     cabecera.textContent = `${autor} · ${hora}`;
-    // CLAVE DE SEGURIDAD: textContent inserta el valor como TEXTO PLANO.
-    // Si la opinión es "<script>alert(1)</script>", se ve literal y NO se ejecuta.
-    // Con innerHTML el navegador lo interpretaría como HTML (vulnerabilidad XSS).
+    // textContent inserta texto plano, así el HTML escrito por el usuario no se ejecuta (anti-XSS).
     texto.textContent = opinion;
     li.append(cabecera, texto);
     lista.append(li);
   }
 }
 
-/* 4.1 y 4.2 Publicación: construye el objeto de registro pedido */
+// Gestiona el envío del formulario: crea, guarda y muestra la reseña.
 function publicarResena(evento, resenas, autor) {
   evento.preventDefault(); // evita que el formulario recargue la página
   const campo = $('opinion');
-  const opinion = campo.value.trim();
+  const opinion = campo.value.trim(); // quita espacios sobrantes
   if (!opinion) return; // no se publican reseñas vacías
 
+  // Añade la nueva reseña a la lista.
   resenas.push({
-    timestamp: Date.now(),                          // marca de tiempo de creación (ms)
-    socio: autor,
+    timestamp: Date.now(),                          // momento de creación en milisegundos
+    socio: autor,                                   // quién la escribe
     hora: new Date().toLocaleTimeString('es-ES'),   // hora local de envío
     opinion,
   });
-  guardarResenas(resenas); // persiste ANTES de repintar
+  guardarResenas(resenas); // guarda antes de repintar
   renderResenas(resenas);
-  campo.value = '';
+  campo.value = '';        // vacía el campo de texto
 }
 
-/* ==========================================================================
-   Arranque
-   Se llama directamente (sin DOMContentLoaded) porque el script se carga con
-   "defer": cuando se ejecuta, el DOM ya está construido.
-   ========================================================================== */
+// ============================================================
+// Arranque
+// ============================================================
+
+// Prepara toda la página y conecta los eventos.
 function iniciar() {
   const sesion = leerSesion();
   const correo = limpiarCorreo(socio.email);
   aplicarPreferencias(socio);
 
   actualizarEstadoRed(sesion.online);
-  // Los eventos online/offline mantienen el indicador actualizado sin recargar
+  // Mantiene el indicador de conexión actualizado sin recargar la página.
   window.addEventListener('online', () => actualizarEstadoRed(true));
   window.addEventListener('offline', () => actualizarEstadoRed(false));
   renderPerfil(sesion, correo);
 
-  renderResumen();
-  $('codigo-promo').addEventListener('input', renderResumen); // recalcula al teclear
+  renderResumen(); // calcula el desglose al cargar
+  $('codigo-promo').addEventListener('input', renderResumen); // recalcula al escribir el código
   $('btn-reservar').addEventListener('click', confirmarReserva);
 
   $('btn-flash').addEventListener('click', activarDescuentoFlash);
 
-  // Las reseñas se cargan UNA vez y el mismo array se reutiliza al publicar
+  // Las reseñas se cargan una vez y el mismo array se reutiliza al publicar.
   const resenas = cargarResenas();
   renderResenas(resenas);
   $('form-resena').addEventListener('submit', (e) => publicarResena(e, resenas, sesion.usuario));
 }
 
+// Se ejecuta directamente porque el script se carga con "defer" y el DOM ya está listo.
 iniciar();
