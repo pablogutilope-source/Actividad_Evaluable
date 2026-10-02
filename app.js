@@ -1,9 +1,5 @@
 'use strict';
 // Activa el modo estricto: los errores silenciosos pasan a lanzar excepciones.
-
-// ============================================================
-// Utilidades
-// ============================================================
 // Atajo para buscar un elemento del HTML por su id.
 const $ = (id) => document.getElementById(id);
 
@@ -15,10 +11,6 @@ const socio = {
   suscripcion: null,                     // null -> tomará la suscripción por defecto
   entradasRegalo: undefined,             // undefined -> tomará las entradas por defecto
 };
-
-// ============================================================
-// BLOQUE 1 · Acceso, diagnóstico del entorno y perfil
-// ============================================================
 
 // Recoge los datos de la sesión actual (URL y navegador).
 function leerSesion() {
@@ -96,10 +88,6 @@ function renderPerfil(sesion, correo) {
     perfil.append(dt, dd);
   }
 }
-
-// ============================================================
-// BLOQUE 2 · Taquilla, tarifas y facturación
-// ============================================================
 const IVA = 0.21; // 21 % de IVA
 // Formateador de moneda en euros con estilo español (12,10 €).
 const formatoEuro = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' });
@@ -176,9 +164,6 @@ function confirmarReserva() {
   $('reserva').textContent = `Reserva confirmada · Ticket nº ${++idTicket}`;
 }
 
-// ============================================================
-// BLOQUE 3 · Promoción "Venta Anticipada" (temporizador)
-// ============================================================
 const DURACION_FLASH = 20; // segundos que dura la promoción
 // Guarda el id del intervalo activo (null = no hay cuenta atrás en marcha).
 let temporizadorId = null;
@@ -209,10 +194,6 @@ function activarDescuentoFlash() {
     }
   }, 1000);
 }
-
-// ============================================================
-// BLOQUE 4 · Reseñas, seguridad y persistencia
-// ============================================================
 const CLAVE_RESENAS = 'cineverse:resenas'; // clave con la que se guardan en localStorage
 
 // Recupera las reseñas guardadas; si algo falla devuelve una lista vacía.
@@ -276,10 +257,6 @@ function publicarResena(evento, resenas, autor) {
   renderResenas(resenas);
   campo.value = '';        // vacía el campo de texto
 }
-
-// ============================================================
-// Arranque
-// ============================================================
 
 // Prepara toda la página y conecta los eventos.
 function iniciar() {
